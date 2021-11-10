@@ -10,7 +10,6 @@ Example:
 
 > ./um.py umz/sandmark.umz
 
-
 ## ChangeLog
 
 2021-11-09: Finished first working implementation of Universal Machine

@@ -22,15 +22,47 @@ class UM:
         
         # status (0 = HALT, 1 = RUNNING, -1 = FAIL)
         self.status = 0
+
+        # max value
+        self.m = 0b11111111111111111111111111111111
+        
+        # operator map
+        self.operator = [
+            self.conditional_move,
+            self.array_index,
+            self.array_amendment,
+            self.addition,
+            self.multiplication,
+            self.division,
+            self.not_and,
+            self.halt,
+            self.allocation,
+            self.abandonement,
+            self.output_,
+            self.input_,
+            self.load_program,
+            self.orthography,
+        ]    
         
     def readProg(self,infile="umz/sandmark.umz"):
-        with open(infile, mode='rb') as file:
+        '''Load program from UMZ file'''
+        with open(infile, mode='rb') as file:        
             part = file.read(4)
             while part:
-                self.mem[0].append(struct.unpack('>L', part)[0])
+                self.mem[0].append(struct.unpack('>L', part)[0])                
                 part = file.read(4)
 
-    ### OPERATORS
+    def readProg2(self,infile):        
+        with open(infile) as file:
+            p = file.read(4)
+            while len(p)==4:
+                a = ord(p[0])
+                b = ord(p[1])
+                c = ord(p[2])
+                d = ord(p[3])
+                w = (a << 24) | (b << 16) | (c << 8) | (d)
+                self.mem[0].append(w)
+                p = file.read(4)
                 
     def conditional_move(self,a,b,c):
         # 0. Conditional Move.
@@ -45,6 +77,8 @@ class UM:
         # The register A receives the value stored at offset
         # in register C in the array identified by B.
         # ACTUALLY: identified by *value in register B!*
+        #if self.reg[b]<len(self.mem):
+        #    if self.reg[c]<len(self.mem[self.reg[b]]):
         self.reg[a] = self.mem[self.reg[b]][self.reg[c]]
         return
 
@@ -53,6 +87,8 @@ class UM:
         # The array identified by A is amended at the offset
         # in register B to store the value in register C.
         # ACTUALLY: identified by *value in register A!*
+        #if self.reg[a]<len(self.mem):
+        #    if self.reg[b]<len(self.mem[self.reg[a]]):
         self.mem[self.reg[a]][self.reg[b]] = self.reg[c]
         return
 
@@ -60,14 +96,14 @@ class UM:
         # 3. Addition.
         # The register A receives the value in register B plus 
         # the value in register C, modulo 2^32.
-        self.reg[a] = (self.reg[b]+self.reg[c]) & 0b11111111111111111111111111111111
+        self.reg[a] = (self.reg[b]+self.reg[c]) & self.m
         return 
 
     def multiplication(self,a,b,c):
         # 4. Multiplication.
         # The register A receives the value in register B times
         # the value in register C, modulo 2^32.
-        self.reg[a] = (self.reg[b]*self.reg[c]) & 0b11111111111111111111111111111111
+        self.reg[a] = (self.reg[b]*self.reg[c]) & self.m
         return
 
     def division(self,a,b,c):
@@ -85,8 +121,7 @@ class UM:
         # either register B or register C has a 0 bit in that
         # position.  Otherwise the bit in register A receives
         # the 0 bit.
-        self.reg[a] = ( ~self.reg[b] & 0b11111111111111111111111111111111) | \
-                       (~self.reg[c] & 0b11111111111111111111111111111111)
+        self.reg[a] = (~self.reg[b] & self.m) | (~self.reg[c] & self.m)
         return
 
     def halt(self,a,b,c):
@@ -144,9 +179,9 @@ class UM:
             return
         else:
             while len(self.command):
-                self.reg[c] = ord(self.command.pop(0)) & 0xFF # avoid values larger than 255
+                self.reg[c] = ord(self.command.pop(0)) #& 0xFF # avoid values larger than 255
                 return
-            self.reg[c] = 0b11111111111111111111111111111111
+            self.reg[c] = self.m
             return
 
     def load_program(self,a,b,c):
@@ -175,25 +210,6 @@ class UM:
         # The value indicated is loaded into the register A
         # forthwith.
         self.reg[a] = b # replace v with b in call
-    
-    ### Operator map
-    
-    operator = [
-        conditional_move,
-        array_index,
-        array_amendment,
-        addition,
-        multiplication,
-        division,
-        not_and,
-        halt,
-        allocation,
-        abandonement,
-        output_,
-        input_,
-        load_program,
-        orthography,
-    ]    
                 
     def run(self):
         
@@ -219,15 +235,14 @@ class UM:
             if op==13:
                 a = p >> (32-4-3) & 0b111
                 v = p & 0b00000001111111111111111111111111
-                self.operator[op](self,a,v,v)            
+                self.operator[op](a,v,v)            
             else:
                 a = (p & 0b111000000) >> 6
                 b = (p & 0b000111000) >> 3
                 c = (p & 0b000000111) >> 0
-                self.operator[op](self,a,b,c)
-                        
+                self.operator[op](a,b,c)
+            
             self.i += 1
-
 
 #um = UM("umz/sandmark.umz")
 um = UM(sys.argv[1])
