@@ -10,8 +10,10 @@ class UM:
         self.mem = [[]]
         if infile != "":
             self.mem[0] = self.readProg(infile)
-            #self.readCleanDump(infile)
-        
+
+        # list of reusable addresses
+        self.freed = []
+            
         # registers
         self.reg = [0, 0, 0, 0, 0, 0, 0, 0]
             
@@ -129,16 +131,24 @@ class UM:
         # holding the value 0. A bit pattern not consisting of
         # exclusively the 0 bit, and that identifies no other
         # active allocated array, is placed in the B register.
-        self.mem.append( [0] * self.reg[c] )
-        self.reg[b] = len(self.mem)-1
+        if (len(self.freed)==0): # no free address, add a new one
+            self.mem.append( [0] * self.reg[c] )
+            self.reg[b] = len(self.mem)-1
+        else: # use first available free address
+            freeadd = self.freed.pop(0) 
+            self.mem[freeadd] = [0] * self.reg[c]
+            self.reg[b] = freeadd
         return
 
     def abandonement(self,a,b,c):
         # 9. Abandonment.
         # The array identified by the register C is abandoned.
         # Future allocations may then reuse that identifier.
+        # **** NEED TO BOOKKEEP the FREED ADDRESSES! ****
         if self.reg[c]>0 and self.reg[c]<len(self.mem):
-            self.mem[self.reg[c]] = []
+            #self.mem[self.reg[c]] = []
+            self.mem[self.reg[c]] = None
+            self.freed.append(self.reg[c]) # keep a list of freed addresses
         else:
             self.status = -1
             print(" ** Abandonment FAIL **")
@@ -150,9 +160,9 @@ class UM:
         # immediately. Only values between and including 0 and 255
         # are allowed.
         if 0<=self.reg[c]<256:
-            print(chr(self.reg[c]),end="")
-            #sys.stdout.write(chr(self.reg[c]))
-            #sys.stdout.flush()
+            #print(chr(self.reg[c]),end="")
+            sys.stdout.write(chr(self.reg[c]))
+            sys.stdout.flush()
         else:
             self.status = -1
             print(" ** Output FAIL **")
@@ -166,22 +176,8 @@ class UM:
         # If the end of input has been signaled, then the 
         # register C is endowed with a uniform value pattern
         # where every place is pregnant with the 1 bit.
-
-        # My original version, somewhat buggy...
-        #if not len(self.command):
-        #    self.command = list(input())
-        #    self.i -= 1
-        #    return
-        #else:
-        #    while len(self.command):
-        #        self.reg[c] = ord(self.command.pop(0)) #& 0xFF # avoid values larger than 255
-        #        return
-        #    self.reg[c] = self.m
-        #    return
-
-        # a cleaner implementation using stdin and exception to handle end of command
         try:
-            self.reg[c] = ord(sys.stdin.read(1)) & 0xFF
+            self.reg[c] = ord(sys.stdin.read(1))
         except EOFError:
             self.reg[c] = 0xFFFFFFFF
         return
