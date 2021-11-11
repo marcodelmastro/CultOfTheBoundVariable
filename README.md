@@ -2,14 +2,43 @@
 
 http://www.boundvariable.org/task.shtml
 
-## Usage
+## Universal Machine develpment
 
-> ./um.py <UMZ file>
+Using pypy to speedup execution:
 
-Example:
+```
+pypy3 ./um.py ./umz/sandmark.umz | tee ./umz/sandmark-myoutput.txt
+```
 
-> ./um.py umz/sandmark.umz
+## Codex processing
 
-## ChangeLog
+Running the UM on codex.umz proposed to "dump UM data"
 
-2021-11-09: Finished first working implementation of Universal Machine
+```
+pypy3 um.py umz/codex.umz
+```
+
+```
+self-check succeeded!
+enter decryption key:
+(\b.bb)(\v.vv)06FHPVboundvarHRAk
+decrypting...
+ok
+LOADING: 9876543210
+
+ == CBV ARCHIVE ==
+    VOLUME ID 9
+
+ Choose a command:
+
+ p) dump UM data
+ x) exit
+
+?
+```
+
+Trying to save dump...
+
+```
+cat umz/codex.ins | pypy3 um.py umz/codex.umz - > umz/dump.out
+```

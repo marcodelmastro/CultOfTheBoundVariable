@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import sys
 import struct
 
@@ -46,20 +47,24 @@ class UM:
         
     def readProg(self,infile="umz/sandmark.umz"):
         '''Load program from UMZ file'''
-        with open(infile, mode='rb') as file:        
+        with open(infile, mode='rb') as file:
             part = file.read(4)
             while part:
                 self.mem[0].append(struct.unpack('>L', part)[0])                
                 part = file.read(4)
 
-    def readProg2(self,infile):        
-        with open(infile) as file:
+    def readProg2(self,infile):
+        with open(infile,'rb') as file:
             p = file.read(4)
             while len(p)==4:
-                a = ord(p[0])
-                b = ord(p[1])
-                c = ord(p[2])
-                d = ord(p[3])
+                #a = ord(p[0])
+                #B = ord(p[1])
+                #c = ord(p[2])
+                #d = ord(p[3])
+                a = p[0]
+                b = p[1]
+                c = p[2]
+                d = p[3]
                 w = (a << 24) | (b << 16) | (c << 8) | (d)
                 self.mem[0].append(w)
                 p = file.read(4)
@@ -158,11 +163,15 @@ class UM:
         # The value in the register C is displayed on the console
         # immediately. Only values between and including 0 and 255
         # are allowed.
-        if self.reg[c]<=255:
-            print(chr(self.reg[c]),end="")
-        else:
-            self.status = -1
-            print(" ** Output FAIL **")
+        #if 0<=self.reg[c]<256:
+            #print(chr(self.reg[c]),end="")
+            # better use of stdout
+        #sys.stdout.write(chr(self.reg[c]))
+        os.write(1, bytes(chr(self.reg[c]),'utf-8') )
+        
+        #else:
+        #    self.status = -1
+        #    print(" ** Output FAIL **")
         return
 
     def input_(self,a,b,c):
@@ -173,16 +182,25 @@ class UM:
         # If the end of input has been signaled, then the 
         # register C is endowed with a uniform value pattern
         # where every place is pregnant with the 1 bit.
-        if not len(self.command):
-            self.command = list(input())
-            self.i -= 1
-            return
-        else:
-            while len(self.command):
-                self.reg[c] = ord(self.command.pop(0)) #& 0xFF # avoid values larger than 255
-                return
-            self.reg[c] = self.m
-            return
+
+        # My original version, somewhat buggy...
+        #if not len(self.command):
+        #    self.command = list(input())
+        #    self.i -= 1
+        #    return
+        #else:
+        #    while len(self.command):
+        #        self.reg[c] = ord(self.command.pop(0)) #& 0xFF # avoid values larger than 255
+        #        return
+        #    self.reg[c] = self.m
+        #    return
+
+        # a cleaner implementation using stdin and exception to handle end of command
+        try:
+            self.reg[c] = ord(sys.stdin.read(1)) & 0xFF
+        except EOFError:
+            self.reg[c] = 0xFFFFFFFF
+        return
 
     def load_program(self,a,b,c):
         # 12. Load Program.
@@ -241,7 +259,8 @@ class UM:
                 b = (p & 0b000111000) >> 3
                 c = (p & 0b000000111) >> 0
                 self.operator[op](a,b,c)
-            
+
+            #print(op,a,b,c,v)
             self.i += 1
 
 #um = UM("umz/sandmark.umz")
