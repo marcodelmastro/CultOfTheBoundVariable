@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import os
 import sys
 import struct
 
@@ -10,7 +9,8 @@ class UM:
         # platter arrays. 0 array initialized with program
         self.mem = [[]]
         if infile != "":
-            self.readProg(infile)
+            self.mem[0] = self.readProg(infile)
+            #self.readCleanDump(infile)
         
         # registers
         self.reg = [0, 0, 0, 0, 0, 0, 0, 0]
@@ -47,27 +47,13 @@ class UM:
         
     def readProg(self,infile="umz/sandmark.umz"):
         '''Load program from UMZ file'''
+        program = []
         with open(infile, mode='rb') as file:
             part = file.read(4)
             while part:
-                self.mem[0].append(struct.unpack('>L', part)[0])                
+                program.append(struct.unpack('>L', part)[0])                
                 part = file.read(4)
-
-    def readProg2(self,infile):
-        with open(infile,'rb') as file:
-            p = file.read(4)
-            while len(p)==4:
-                #a = ord(p[0])
-                #B = ord(p[1])
-                #c = ord(p[2])
-                #d = ord(p[3])
-                a = p[0]
-                b = p[1]
-                c = p[2]
-                d = p[3]
-                w = (a << 24) | (b << 16) | (c << 8) | (d)
-                self.mem[0].append(w)
-                p = file.read(4)
+            return program
                 
     def conditional_move(self,a,b,c):
         # 0. Conditional Move.
@@ -163,15 +149,13 @@ class UM:
         # The value in the register C is displayed on the console
         # immediately. Only values between and including 0 and 255
         # are allowed.
-        #if 0<=self.reg[c]<256:
-            #print(chr(self.reg[c]),end="")
-            # better use of stdout
-        #sys.stdout.write(chr(self.reg[c]))
-        os.write(1, bytes(chr(self.reg[c]),'utf-8') )
-        
-        #else:
-        #    self.status = -1
-        #    print(" ** Output FAIL **")
+        if 0<=self.reg[c]<256:
+            print(chr(self.reg[c]),end="")
+            #sys.stdout.write(chr(self.reg[c]))
+            #sys.stdout.flush()
+        else:
+            self.status = -1
+            print(" ** Output FAIL **")
         return
 
     def input_(self,a,b,c):
