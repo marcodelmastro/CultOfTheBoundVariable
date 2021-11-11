@@ -1,52 +1,10 @@
 #!/usr/bin/env python
 
-import sys
+import sys, getopt
 import struct
 
 class UM:
-    
-    def __init__(self,infile=""):
-        # platter arrays. 0 array initialized with program
-        self.mem = [[]]
-        if infile != "":
-            self.mem[0] = self.readProg(infile)
 
-        # list of reusable addresses
-        self.freed = []
-            
-        # registers
-        self.reg = [0, 0, 0, 0, 0, 0, 0, 0]
-            
-        # instruction index ("finger")
-        self.i = 0
-
-        # input buffer
-        self.command = []
-        
-        # status (0 = HALT, 1 = RUNNING, -1 = FAIL)
-        self.status = 0
-
-        # max value
-        self.m = 0b11111111111111111111111111111111
-        
-        # operator map
-        self.operator = [
-            self.conditional_move,
-            self.array_index,
-            self.array_amendment,
-            self.addition,
-            self.multiplication,
-            self.division,
-            self.not_and,
-            self.halt,
-            self.allocation,
-            self.abandonement,
-            self.output_,
-            self.input_,
-            self.load_program,
-            self.orthography,
-        ]    
-        
     def readProg(self,infile="umz/sandmark.umz"):
         '''Load program from UMZ file'''
         program = []
@@ -56,7 +14,7 @@ class UM:
                 program.append(struct.unpack('>L', part)[0])                
                 part = file.read(4)
             return program
-                
+    
     def conditional_move(self,a,b,c):
         # 0. Conditional Move.
         # The register A receives the value in register B,
@@ -89,14 +47,14 @@ class UM:
         # 3. Addition.
         # The register A receives the value in register B plus 
         # the value in register C, modulo 2^32.
-        self.reg[a] = (self.reg[b]+self.reg[c]) & self.m
+        self.reg[a] = (self.reg[b]+self.reg[c]) & 0xFFFFFFFF
         return 
 
     def multiplication(self,a,b,c):
         # 4. Multiplication.
         # The register A receives the value in register B times
         # the value in register C, modulo 2^32.
-        self.reg[a] = (self.reg[b]*self.reg[c]) & self.m
+        self.reg[a] = (self.reg[b]*self.reg[c]) & 0xFFFFFFFF
         return
 
     def division(self,a,b,c):
@@ -104,8 +62,8 @@ class UM:
         # The register A receives the value in register B
         # divided by the value in register C, if any, where
         # each quantity is treated as an unsigned 32 bit number.
-        if self.reg[c]>0:
-            self.reg[a] = (self.reg[b] // self.reg[c])
+        if self.reg[c]!=0:
+            self.reg[a] = (self.reg[b] // self.reg[c]) & 0xFFFFFFFF
         return
 
     def not_and(self,a,b,c):
@@ -113,8 +71,9 @@ class UM:
         # Each bit in the register A receives the 1 bit if
         # either register B or register C has a 0 bit in that
         # position.  Otherwise the bit in register A receives
-        # the 0 bit.
-        self.reg[a] = (~self.reg[b] & self.m) | (~self.reg[c] & self.m)
+        # the 0 bit.~
+        #self.reg[a] = (~self.reg[b] | ~self.reg[c]) & 0xFFFFFFFF
+        self.reg[a] = (~(self.reg[b] & self.reg[c])) & 0xFFFFFFFF
         return
 
     def halt(self,a,b,c):
@@ -131,7 +90,7 @@ class UM:
         # holding the value 0. A bit pattern not consisting of
         # exclusively the 0 bit, and that identifies no other
         # active allocated array, is placed in the B register.
-        if (len(self.freed)==0): # no free address, add a new one
+        if len(self.freed)==0: # no free address, add a new one
             self.mem.append( [0] * self.reg[c] )
             self.reg[b] = len(self.mem)-1
         else: # use first available free address
@@ -145,7 +104,7 @@ class UM:
         # The array identified by the register C is abandoned.
         # Future allocations may then reuse that identifier.
         # **** NEED TO BOOKKEEP the FREED ADDRESSES! ****
-        if self.reg[c]>0 and self.reg[c]<len(self.mem):
+        if 0<=self.reg[c]<len(self.mem):
             #self.mem[self.reg[c]] = []
             self.mem[self.reg[c]] = None
             self.freed.append(self.reg[c]) # keep a list of freed addresses
@@ -163,6 +122,9 @@ class UM:
             #print(chr(self.reg[c]),end="")
             sys.stdout.write(chr(self.reg[c]))
             sys.stdout.flush()
+            if self.dump:
+                cb = self.reg[c].to_bytes(1, byteorder='big')
+                self.fd.write(cb)
         else:
             self.status = -1
             print(" ** Output FAIL **")
@@ -203,18 +165,56 @@ class UM:
         self.i = self.reg[c]-1 # subtract 1 since it'll be incremented later
         return
     
-    def orthography(self,a,b,c):
+    def orthography(self,a,v):
         # 13. Orthography.
         # The value indicated is loaded into the register A
         # forthwith.
-        self.reg[a] = b # replace v with b in call
-                
-    def run(self):
+        self.reg[a] = v
+
+    operation = [
+            conditional_move,
+            array_index,
+            array_amendment,
+            addition,
+            multiplication,
+            division,
+            not_and,
+            halt,
+            allocation,
+            abandonement,
+            output_,
+            input_,
+            load_program,
+            orthography
+    ]  
+    
+    def __init__(self,infile=""):
+        # platter arrays. 0 array initialized with program
+        self.mem = [[]]
+        if infile != "":
+            self.mem[0] = self.readProg(infile)
+            
+        # list of reusable addresses
+        self.freed = []
+            
+        # registers
+        self.reg = [0, 0, 0, 0, 0, 0, 0, 0]
+            
+        # instruction index ("finger")
+        self.i = 0
         
-        a = 0
-        b = 0
-        c = 0
-        v = 0     
+        # status (0 = HALT, 1 = RUNNING, -1 = FAIL)
+        self.status = 0
+
+        # dump output bytes to file
+        self.dump = False
+        self.fd = None
+          
+    def run(self):
+
+        if self.dump:
+            self.fd = open('dump.out','wb')
+        
         self.status = 1
         
         while self.status>0:
@@ -233,16 +233,25 @@ class UM:
             if op==13:
                 a = p >> (32-4-3) & 0b111
                 v = p & 0b00000001111111111111111111111111
-                self.operator[op](a,v,v)            
+                UM.operation[op](self,a,v)            
             else:
                 a = (p & 0b111000000) >> 6
                 b = (p & 0b000111000) >> 3
                 c = (p & 0b000000111) >> 0
-                self.operator[op](a,b,c)
+                UM.operation[op](self,a,b,c)
 
-            #print(op,a,b,c,v)
             self.i += 1
+        
 
-#um = UM("umz/sandmark.umz")
-um = UM(sys.argv[1])
-um.run()
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: um.py <file.um(z)>")
+        sys.exit(0)
+
+    infile = sys.argv[1] 
+    um = UM(infile)
+
+    if len(sys.argv) == 3 and sys.argv[2]=="-d":
+        um.dump = True
+        
+    um.run()
