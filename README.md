@@ -52,6 +52,22 @@ cat umz/codex.ins | pypy3 um.py umz/codex.umz -d
 
 And it works!
 
+## UMIX
+
+Let the fun begin...
+
 ```
 pypy3 um.py umz/dump.um
+```
+
+```
+12:00:00 1/1/19100
+Welcome to Universal Machine IX (UMIX).
+
+This machine is a shared resource. Please do not log
+in to multiple simultaneous UMIX servers. No game playing
+is allowed.
+
+Please log in (use 'guest' for visitor access).
+;login:
 ```
