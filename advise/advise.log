@@ -1,0 +1,65 @@
+% ./advise step arith.adv arith.tests
+Running input tests; printing steps.
+Welcome to O'Cult v1.0.
+
+Parsing advice...
+Validating advice...
+Successfully parsed 3 rules; size: 30.
+
+Running 4 input tests...
+************************
+----------------------------------------------------------------------
+
+Initial Term:    Compute (Add (S (S Z)) (S (S Z)))
+Applying advice...
+                 -> (Compute (S ((Add (S Z)) (S (S Z)))))
+                 -> (Compute (S (S ((Add Z) (S (S Z))))))
+                 -> (Compute (S (S (S (S Z)))))
+                 -> (S (S (S (S Z))))
+Final Term:      (S (S (S (S Z))))
+Total Steps:     4
+
+Correct!
+
+----------------------------------------------------------------------
+
+----------------------------------------------------------------------
+
+Initial Term:    Compute (Mult (S (S Z)) (S (S Z)))
+Applying advice...
+                 -> ((Mult (S (S Z))) (S (S Z)))
+Final Term:      ((Mult (S (S Z))) (S (S Z)))
+Total Steps:     1
+
+INCORRECT!
+Expected:	(S (S (S (S Z))))
+
+----------------------------------------------------------------------
+
+----------------------------------------------------------------------
+
+Initial Term:    Compute (Add (S Z) (Mult (S (S Z)) (S (S (S Z)))))
+Applying advice...
+                 -> (Compute (S ((Add Z) ((Mult (S (S Z))) (S (S (S Z)))))))
+                 -> (Compute (S ((Mult (S (S Z))) (S (S (S Z))))))
+                 -> (S ((Mult (S (S Z))) (S (S (S Z)))))
+Final Term:      (S ((Mult (S (S Z))) (S (S (S Z)))))
+Total Steps:     3
+
+INCORRECT!
+Expected:	(S (S (S (S (S (S (S Z)))))))
+
+----------------------------------------------------------------------
+
+----------------------------------------------------------------------
+
+Initial Term:    Compute (Add (Add (S (S Z)) (S Z)) (Add (S (S (S Z))) (S (S Z))))
+Applying advice...
+                 -> ((Add ((Add (S (S Z))) (S Z))) ((Add (S (S (S Z)))) (S (S Z))))
+Final Term:      ((Add ((Add (S (S Z))) (S Z))) ((Add (S (S (S Z)))) (S (S Z))))
+Total Steps:     1
+
+INCORRECT!
+Expected:	(S (S (S (S (S (S (S (S Z))))))))
+
+----------------------------------------------------------------------
