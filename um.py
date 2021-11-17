@@ -188,7 +188,7 @@ class UM:
             orthography
     ]  
     
-    def __init__(self,infile=""):
+    Def __init__(self,infile=""):
         # platter arrays. 0 array initialized with program
         self.mem = [[]]
         if infile != "":
