@@ -241,12 +241,11 @@ class UM:
                 UM.operation[op](self,a,b,c)
 
             self.i += 1
-        
 
-if __name__ == "__main__":
+def main() -> int:
     if len(sys.argv) < 2:
         print("Usage: um.py <file.um(z)>")
-        sys.exit(0)
+        return 0
 
     infile = sys.argv[1] 
     um = UM(infile)
@@ -255,3 +254,7 @@ if __name__ == "__main__":
         um.dump = True
         
     um.run()
+    return 1
+            
+if __name__ == "__main__":
+    sys.exit(main())
