@@ -221,19 +221,19 @@ class UM:
             
             # If at the beginning of a cycle, the execution finger does not indicate 
             # a platter that describes a valid instruction, then the machine may Fail.          
-            if self.i > len(self.mem[0]):
+            if self.i >= len(self.mem[0]):
                 print(" ** Reached end of program **")
                 return
             
             # get instruction from program array
             p = self.mem[0][self.i]
             
-            # decode instruction
+            # Decode instruction
             op = p >> (32-4)
             if op==13:
                 a = p >> (32-4-3) & 0b111
                 v = p & 0b00000001111111111111111111111111
-                UM.operation[op](self,a,v)            
+                UM.operation[op](self,a,v)
             else:
                 a = (p & 0b111000000) >> 6
                 b = (p & 0b000111000) >> 3

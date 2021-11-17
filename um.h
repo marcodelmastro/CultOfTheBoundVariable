@@ -34,6 +34,37 @@ UM::UM(std::string infile) {
 
 UM::~UM(){}
 
+void UM::run() {
+  status = 1; // running!
+  while (status>0) {
+
+    if (i>=mem[0]->size()) {
+      std::cerr << " ** Reached end of program **" << std::endl;
+      return;
+    }
+
+    // get instruction from program array
+    uint32_t p = mem[0]->at(i);
+
+    // decode instructions
+    uint32_t op = p >> (32-4);
+    if (op==13) {
+      uint32_t a = p >> (32-4-3) & 0b111;
+      uint32_t v = p & 0b00000001111111111111111111111111;
+      std::cout << op << " " << a << " " << v << std::endl;
+      //UM.operation[op](self,a,v)
+    } else {
+      uint32_t a = (p & 0b111000000) >> 6;
+      uint32_t b = (p & 0b000111000) >> 3;
+      uint32_t c = (p & 0b000000111) >> 0;
+      std::cout << op << " " << a << " " << b << " " << c << std::endl;
+      //UM.operation[op](self,a,b,c)
+    }
+
+    i++;
+  }
+}
+
 std::vector<uint32_t>* UM::readProg(std::string infile) {
     std::ifstream input(infile.c_str(), std::ios::binary);
     std::vector<unsigned char> buffer((std::istreambuf_iterator<char>(input)), std::istreambuf_iterator<char>());

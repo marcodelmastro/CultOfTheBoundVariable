@@ -9,6 +9,7 @@ int main(int argc, char** argv) {
 
     std::string infile(argv[1]);
     UM um(infile);
+    um.run();
     
     exit(1);
 }
