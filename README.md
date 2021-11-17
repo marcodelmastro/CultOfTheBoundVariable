@@ -92,6 +92,6 @@ To run the bentchmark tests:
 
 ### Bentchmark
 
-| Python (PyPY) |   |
-| C++ |   |
+| Python (PyPY) | ``  |
+| C++ | `2713.64s user 16.22s system 99% cpu 45:56.45 total`  |
 
