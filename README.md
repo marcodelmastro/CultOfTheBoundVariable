@@ -76,14 +76,22 @@ Please log in (use 'guest' for visitor access).
 
 ### C++
 
-After some digging of the UMIX system, I realised my python implementation is too slow to allow efficient attempts to solve of the various puzzles (for instance, the `adventure` game takes forever to load, it is thus impossible to automatize the searach for a correct sequence of actions). Therefore I am now trying to develop a `um` machine in C++. To compile:
+After some digging of the UMIX system, I realised my python implementation is too slow to allow efficient attempts to solve of the various puzzles (for instance, the `adventure` game takes forever to load, it is thus impossible to automatize the searach for a correct sequence of actions). Therefore I am now trying to develop a `um` machine in C++. 
+
+To compile:
 
 ```
 make
 ```
 
-To run the bentchmak tests:
+To run the bentchmark tests:
 
 ```
 ./um ./umz/sandmark.umz
 ```
+
+### Bentchmark
+
+| Python (PyPY) |   |
+| C++ |   |
+
