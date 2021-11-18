@@ -97,6 +97,5 @@ Laptop: MacBook Pro 2.3 GHz Quad-Core i7
 | Implementation | `time` to execute `sandmark.umz` on my laptop          |
 |----------------|--------------------------------------------------------|
 | Python (PyPy)  | `5412.57s user 47.87s system 98% cpu 1:32:34.61 total` |
-|----------------|--------------------------------------------------------|
 | C++            | `2713.64s user 16.22s system 99% cpu 45:56.45 total`   |
 
