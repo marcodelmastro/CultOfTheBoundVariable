@@ -12,7 +12,7 @@ Using pypy to speedup execution:
 pypy3 ./um.py ./umz/sandmark.umz | tee ./umz/sandmark-myoutput.txt
 ```
 
-## Codex processing
+#### Codex processing
 
 Running the UM on codex.umz proposed to "dump UM data"
 
@@ -54,7 +54,7 @@ cat umz/codex.ins | pypy3 um.py umz/codex.umz -d
 
 And it works!
 
-## UMIX
+#### UMIX
 
 Let the fun begin...
 
@@ -90,7 +90,7 @@ To run the bentchmark tests:
 ./um ./umz/sandmark.umz
 ```
 
-### Bentchmark
+### Benchmark
 
 Laptop: MacBook Pro 2.3 GHz Quad-Core i7
 
@@ -99,3 +99,7 @@ Laptop: MacBook Pro 2.3 GHz Quad-Core i7
 | Python (PyPy)  | `5412.57s user 47.87s system 98% cpu 1:32:34.61 total` |
 | C++            | `2713.64s user 16.22s system 99% cpu 45:56.45 total`   |
 
+
+### Saving state
+
+The C++ UM implementation is indeed faster than the Python one, but one thing that could help (in both cases!) would probably be to save the UM status and start from there to cut on loading and initialization time. I will try to implement this in python since `pickle` makes things easy.

@@ -2,6 +2,8 @@
 
 import sys, getopt
 import struct
+import os
+import pickle
 
 class UM:
 
@@ -138,9 +140,25 @@ class UM:
         # If the end of input has been signaled, then the 
         # register C is endowed with a uniform value pattern
         # where every place is pregnant with the 1 bit.
+
+        # buffer input command
+        if not len(self.input):
+            self.input = [ t for t in input()+"\n" ]
+            # save status before exit
+            if "".join(self.input[:-1])=="exit":
+                with open(self.savfileout, "wb") as f:
+                    print("Saving UM status in "+self.savfileout)
+                    pickle.dump(self.mem,f)
+                    pickle.dump(self.reg,f)
+                    pickle.dump(self.freed,f)
+                    pickle.dump(self.i,f)
+
+        _c = self.input.pop(0)
         try:
-            self.reg[c] = ord(sys.stdin.read(1))
+            #_c = sys.stdin.read(1)
+            self.reg[c] = ord(_c)
         except EOFError:
+            self.input = []
             self.reg[c] = 0xFFFFFFFF
         return
 
@@ -209,6 +227,13 @@ class UM:
         # dump output bytes to file
         self.dump = False
         self.fd = None
+
+        # save files
+        self.savfilein  = "status.sav"
+        self.savfileout = "status.sav"
+
+        # input buffer
+        self.input = []
           
     def run(self):
 
@@ -242,18 +267,45 @@ class UM:
 
             self.i += 1
 
+
 def main() -> int:
     if len(sys.argv) < 2:
         print("Usage: um.py <file.um(z)>")
         return 0
 
     infile = sys.argv[1] 
-    um = UM(infile)
-
-    if len(sys.argv) == 3 and sys.argv[2]=="-d":
-        um.dump = True
+    #um = UM(infile)
+    um = UM()
+    
+    if len(sys.argv) > 2:
+        if "-d" in sys.argv:
+            um.dump = True
+        if "-i" in sys.argv:            
+            um.savfilein = sys.argv[sys.argv.index("-i")+1]
+        if "-o" in sys.argv:            
+            um.savfileout = sys.argv[sys.argv.index("-o")+1]
         
+    files = os.listdir('.')
+    if um.savfilein in files:
+        print("Welcome to the Cult of Bound Variable")
+        ans = "N"
+        if "-i" not in sys.argv:  
+            ans = input("Do you want to start from status saved in "+um.savfilein+"? [y/n]")
+        if ans[0]=="Y" or ans[0]=='y' or "-i" in sys.argv:
+            with open(um.savfilein, "rb") as f:
+                print("Loading state from",um.savfilein,"... ",end="")
+                um.mem = pickle.load(f)
+                um.reg = pickle.load(f)
+                um.freed = pickle.load(f)
+                um.i = pickle.load(f)
+                print("loaded.")
+        else:
+            um.mem[0] = um.readProg(infile)
+    else:
+        um.mem[0] = um.readProg(infile)
+    
     um.run()
+    
     return 1
             
 if __name__ == "__main__":
