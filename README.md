@@ -103,3 +103,7 @@ Laptop: MacBook Pro 2.3 GHz Quad-Core i7
 ### Saving UM state
 
 The C++ UM implementation is indeed faster than the Python one, but one thing that could help (in both cases!) would probably be to save the UM status and start from there to cut on loading and initialization time. I will try to implement this in python since `pickle` makes things easy.
+
+```
+um.py <program.umx> -i <input_status.sav> -o <output_status.sav>
+```
