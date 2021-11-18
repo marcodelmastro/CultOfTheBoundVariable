@@ -144,8 +144,8 @@ class UM:
         # buffer input command
         if not len(self.input):
             self.input = [ t for t in input()+"\n" ]
-            # save status before exit
-            if "".join(self.input[:-1])=="exit":
+            # save status before exit or with custom command 'save'
+            if "".join(self.input[:-1])=="exit" or "".join(self.input[:-1])=="save" :
                 with open(self.savfileout, "wb") as f:
                     print("Saving UM status in "+self.savfileout)
                     pickle.dump(self.mem,f)
