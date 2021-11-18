@@ -299,6 +299,7 @@ def main() -> int:
                 um.freed = pickle.load(f)
                 um.i = pickle.load(f)
                 print("loaded.")
+                print("Type a UMIX command to continue...")
         else:
             um.mem[0] = um.readProg(infile)
     else:
