@@ -1,0 +1,6 @@
+The uploader is used to update firmware on municipal robots. A
+label reads, Warning: use of this device will void your robot's
+warranty.
+Also, it is broken: it is an uploader missing a MOSFET and a
+status LED and a RS232 adapter and a EPROM burner and a battery.
+

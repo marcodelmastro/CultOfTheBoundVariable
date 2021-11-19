@@ -1,0 +1,11 @@
+The downloader is (according to the label) fully compatible with
+third generation municipal robots.
+Also, it is broken: it is a downloader missing a USB cable and a
+display and a jumper shunt and a progress bar and a power cord.
+
+The USB cable is compatible with all high-speed Universal Sand
+Bus 2.0 devices.
+Also, it is broken: it is ((a USB cable missing (a T-9887-OFC
+missing a X-6458-TIJ)) missing a F-6678-DOX) missing a
+N-4832-NUN
+
