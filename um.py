@@ -143,7 +143,8 @@ class UM:
 
         # buffer input command
         if not len(self.input):
-            self.input = [ t for t in input()+"\n" ]
+            #self.input = [ t for t in input()+"\n" ]
+            self.input = [ t for t in sys.stdin.readline() ]            
             # save status before exit or with custom command 'save'
             if "".join(self.input[:-1])=="exit" or "".join(self.input[:-1])=="save" :
                 with open(self.savfileout, "wb") as f:
@@ -287,7 +288,7 @@ def main() -> int:
         
     files = os.listdir('.')
     if um.savfilein in files:
-        print("Welcome to the Cult of Bound Variable")
+        print("Welcome to the Cult of Bound Variable")        
         ans = "N"
         if "-i" not in sys.argv:  
             ans = input("Do you want to start from status saved in "+um.savfilein+"? [y/n]")
@@ -304,7 +305,9 @@ def main() -> int:
             um.mem[0] = um.readProg(infile)
     else:
         um.mem[0] = um.readProg(infile)
-    
+
+    sys.stdout.flush()
+
     um.run()
     
     return 1
